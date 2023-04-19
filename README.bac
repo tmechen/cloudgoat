@@ -70,48 +70,122 @@ When you are finished with the scenario, delete any resources you created yourse
 
 You can read the full documentation for CloudGoat's commands [here in the Usage Guide section](#usage-guide).
 
+## How to use CloudGoat's Docker image
 
-## CloudPentesting Scenarios 
+[![Try in PWD](https://github.com/play-with-docker/stacks/raw/cff22438cb4195ace27f9b15784bbb497047afa7/assets/images/button.png)](http://play-with-docker.com?stack=https://raw.githubusercontent.com/RhinoSecurityLabs/cloudgoat/master/docker_stack.yml)
 
-### iam_rollback (Small / Easy)
-`$ ./cloudgoat.py create iam_rollback`
+### Option 1: Run with default entrypoint
+```console
+$ docker run -it rhinosecuritylabs/cloudgoat:latest
+```
+
+### Option 2: Run with AWS config and credentials
+
+> Warning: Running this command will mount your local AWS configuration files into the Docker container when it is launched. This means that any user with access to the container will have access to your host computer's AWS credentials.
+
+```console
+$ docker run -it -v ~/.aws:/root/.aws/ rhinosecuritylabs/cloudgoat:latest
+```
+
+## K4 Scenarios 
+
+### iam_privesc_by_rollback (Small / Easy)
+
+`$ ./cloudgoat.py create iam_privesc_by_rollback`
 
 Starting with a highly-limited IAM user, the attacker is able to review previous IAM policy versions and restore one which allows full admin privileges, resulting in a privilege escalation exploit.
-[Visit Scenario Page.](scenarios/iam_rollback/README.md)
 
-### lambda_roles (Small / Easy)
-`$ ./cloudgoat.py create lambda_roles`
+[Visit Scenario Page.](scenarios/iam_privesc_by_rollback/README.md)
 
-Starting as the IAM user Marvin, the attacker discovers that they can assume a role that has full Lambda access and pass role permissions. The attacker can then perform privilege escalation using these new permissions to obtain full admin privileges.
+
+
+
+### vulnerable_cognito (Small / Moderate)
+
+`$ ./cloudgoat.py create vulnerable_cognito`
+
+In this scenario, you are presented with a signup and login page with AWS Cognito in the backend. You need to bypass restrictions and exploit misconfigurations in Amazon Cognito in order to elevate your privileges and get Cognito Identity Pool credentials.
+
+Contributed by [TrustOnCloud.](https://trustoncloud.com/)
+
+[Visit Scenario Page.](scenarios/vulnerable_cognito/README.md)
+
+
+
+
+### cloud_breach_s3 (Small / Moderate)
+
+`$ ./cloudgoat.py create cloud_breach_s3`
+
+Starting as an anonymous outsider with no access or privileges, exploit a misconfigured reverse-proxy server to query the EC2 metadata service and acquire instance profile keys. Then, use those keys to discover, access, and exfiltrate sensitive data from an S3 bucket.
+
+[Visit Scenario Page.](scenarios/cloud_breach_s3/README.md)
+
+
+### ec2_ssrf (Medium / Moderate)
+
+`$ ./cloudgoat.py create ec2_ssrf`
+
+Starting as the IAM user Solus, the attacker discovers they have ReadOnly permissions to a Lambda function, where hardcoded secrets lead them to an EC2 instance running a web application that is vulnerable to server-side request forgery (SSRF). After exploiting the vulnerable app and acquiring keys from the EC2 metadata service, the attacker gains access to a private S3 bucket with a set of keys that allow them to invoke the Lambda function and complete the scenario.
+
+[Visit Scenario Page.](scenarios/ec2_ssrf/README.md)
+
+
+
+### rce_web_app (Medium / Hard)
+
+`$ ./cloudgoat.py create rce_web_app`
+
+Starting as the IAM user Lara, the attacker explores a Load Balancer and S3 bucket for clues to vulnerabilities, leading to an RCE exploit on a vulnerable web app which exposes confidential files and culminates in access to the scenario’s goal: a highly-secured RDS database instance.
+
+Alternatively, the attacker may start as the IAM user McDuck and enumerate S3 buckets, eventually leading to SSH keys which grant direct access to the EC2 server and the database beyond.
+
+[Visit Scenario Page.](scenarios/rce_web_app/README.md)
+
+### codebuild_secrets (Large / Hard)
+
+`$ ./cloudgoat.py create codebuild_secrets`
+
+Starting as the IAM user Solo, the attacker first enumerates and explores CodeBuild projects, finding unsecured IAM keys for the IAM user Calrissian therein. Then operating as Calrissian, the attacker discovers an RDS database. Unable to access the database's contents directly, the attacker can make clever use of the RDS snapshot functionality to acquire the scenario's goal: a pair of secret strings.
+
+Alternatively, the attacker may explore SSM parameters and find SSH keys to an EC2 instance. Using the metadata service, the attacker can acquire the EC2 instance-profile's keys and push deeper into the target environment, eventually gaining access to the original database and the scenario goal inside (a pair of secret strings) by a more circuitous route.
 
 > **Note:** This scenario may require you to create some AWS resources, and because CloudGoat can only manage resources it creates, you should remove them manually before running `./cloudgoat destroy`.
-[Visit Scenario Page.](scenarios/lambda_roles/README.md)
 
+[Visit Scenario Page.](scenarios/codebuild_secrets/README.md)
 
-### lambda_sqli (Small / Easy)
-`$ ./cloudgoat.py create lambda_sqli`
+### cicd (Medium / Moderate)
 
-In this scenario, you start as the 'emily' user. You will assume a role with more privileges, discover a lambda function that applies policies to users, and exploit a vulnerability in the function to escalate the privelages of the emily user in order to search for secrets. 
-[Visit Scenario Page.](scenarios/lambda_sqli/README.md)
+`$ ./cloudgoat.py create cicd`
 
+FooCorp is a company exposing a public-facing API. Customers of FooCorp submit sensitive data to the API every minute. The API is implemented as a Lambda function, exposed through an API Gateway. Because FooCorp implements DevOps, it has a continuous deployment pipeline automatically deploying new versions of their Lambda function from source code to production in under a few minutes.
 
-### ec2_profiles (Medium / Moderate)
-`$ ./cloudgoat.py create ec2_profiles`
+Your goal: steal the sensitive data submitted by FooCorp customers!
 
-Starting with a very limited set of permissions, the attacker is able to leverage the instance-profile-attachment permissions to create a new EC2 instance with significantly greater privileges than their own. With access to this new EC2 instance, the attacker gains full administrative powers within the target account and is able to accomplish the scenario's goal - deleting the cg-super-critical-security-server and paving the way for further nefarious actions.
+Contributed by Datadog.
 
-> **Note:** This scenario may require you to create some AWS resources, and because CloudGoat can only manage resources it creates, you should remove them manually before running `./cloudgoat destroy`.
-[Visit Scenario Page.](scenarios/ec2_profiles/README.md)
+[Visit Scenario Page.](scenarios/cicd/README.md)
 
-### ecs_reschedule (Medium / Moderate)
-`$ ./cloudgoat.py create ecs_reschedule`
+### detection_evasion (Medium / Hard)
 
-Starting with access to the external website, the attacker needs to find a remote code execution vulnerability. By using
-RCE the attacker can get access to resources available to the website container. Abusing several ECS misconfigurations the
-attacker gains access to IAM permissions that allow them to force ECS into rescheduling the target container to a
-compromised instance.
-[Visit Scenario Page.](scenarios/ecs_reschedule/README.md)
+`$ ./cloudgoat.py create detection_evasion`
 
+The goal of this scenario is to read out the values for both secrets without being detected. The secrets are both stored
+in Secrets Manager, and their values have the following format (cg-secret-XXXXXX-XXXXXX).
+
+This scenario is significantly different from other CloudGoat scenarios. In detection_evasion, your goals will be
+outlined for you more clearly, and the challenge is to complete them without triggering alarms. There is more setup
+involved in this scenario, and it will take longer to play (you might want/need to play it multiple times).
+
+[Visit Scenario Page.](scenarios/detection_evasion/README.md)
+
+### ecs_efs_attack (Large / Hard)
+
+`$ ./cloudgoat.py create ecs_efs_attack`
+
+Starting with access the "ruse" EC2 the user leverages the instace profile to backdoor the running ECS container. Using the backdoored container the attacker can retireve credentials from the container metadata API. These credentials allow the attacker to start a session on any EC2 with the proper tags set. The attacker uses their permissions to change the tags on the Admin EC2 and starts a session. Once in the Admin EC2 the attacker will port scan the subnet for an open EFS to mount. Once mounted the attacker can retrieve the flag from the elastic file system.
+
+[Visit Scenario Page.](scenarios/ecs_efs_attack/README.md)
 
 ## Usage Guide
 

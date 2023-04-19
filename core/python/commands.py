@@ -32,7 +32,7 @@ class CloudGoat:
         self.scenario_names = dirs_at_location(self.scenarios_dir, names_only=True)
         self.whitelist_path = os.path.join(base_dir, "whitelist.txt")
 
-        self.aws_region = "us-east-1"
+        self.aws_region = "eu-central-1"
         self.cloudgoat_commands = ["config", "create", "destroy", "list", "help"]
         self.non_scenario_instance_dirs = [
             ".git",
@@ -393,7 +393,7 @@ class CloudGoat:
 
         tf_vars = {
             "cgid": cgid,
-            "cg_whitelist": cg_whitelist,
+            "k4_whitelist": cg_whitelist,
             "profile": profile,
             "region": self.aws_region,
         }
@@ -520,7 +520,7 @@ class CloudGoat:
 
                 tf_vars = {
                         "cgid": cgid,
-                        "cg_whitelist": list(),
+                        "k4_whitelist": list(),
                         "profile": profile,
                         "region": self.aws_region,
                 }
@@ -615,7 +615,7 @@ class CloudGoat:
 
             tf_vars = {
                 "cgid": cgid,
-                "cg_whitelist": list(),
+                "k4_whitelist": list(),
                 "profile": profile,
                 "region": self.aws_region,
             }

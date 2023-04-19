@@ -16,18 +16,26 @@ variable "k4_whitelist" {
 
 }
 
-#Example: RDS PostgreSQL Instance Credentials
+#RDS PostgreSQL Instance Credentials
 variable "rds-username" {
   default = "cgadmin"
 }
 variable "rds-password" {
   default = "Purplepwny2029"
 }
-#Example: SSH Public Key
+#SSH Public Key
 variable "ssh-public-key-for-ec2" {
   default = "../cloudgoat.pub"
 }
-#Example: SSH Private Key
+#SSH Private Key
 variable "ssh-private-key-for-ec2" {
   default = "../cloudgoat"
+}
+#Stack Name
+variable "stack-name" {
+  default = "CloudPentesting"
+}
+#Scenario Name
+variable "scenario-name" {
+  default = "rce-web-app"
 }
